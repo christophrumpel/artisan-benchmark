@@ -1,12 +1,12 @@
 {
-    "name": "nunomaduro/skeleton-php",
-    "description": "A skeleton repository for my packages",
-    "keywords": ["php", "skeleton", "package"],
+    "name": "christophrumpel/artisan-benchmark",
+    "description": "Benchmark Artisan Commands",
+    "keywords": ["php", "laravel", "artisan", "benchmark"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Nuno Maduro",
-            "email": "enunomaduro@gmail.com"
+            "name": "Christoph Rumpel",
+            "email": "christoph@christoph-rumpel.com"
         }
     ],
     "require": {
@@ -14,16 +14,12 @@
     },
     "require-dev": {
         "laravel/pint": "^1.18.1",
-        "peckphp/peck": "^0.1.1",
         "pestphp/pest": "^3.5.1",
-        "pestphp/pest-plugin-type-coverage": "^3.1",
-        "phpstan/phpstan": "^1.12.7",
-        "rector/rector": "^1.2.8",
         "symfony/var-dumper": "^7.1.6"
     },
     "autoload": {
         "psr-4": {
-            "NunoMaduro\\SkeletonPhp\\": "src/"
+            "ChristophRumpel\\ArtisanBenchmark\\": "src/"
         }
     },
     "autoload-dev": {
@@ -41,18 +37,10 @@
         }
     },
     "scripts": {
-        "refacto": "rector",
-        "lint": "pint",
-        "test:refacto": "rector --dry-run",
-        "test:lint": "pint --test",
-        "test:typos": "peck",
-        "test:types": "phpstan analyse --ansi",
+        "test:pint": "pint --test",
         "test:unit": "pest --colors=always --coverage --parallel --min=100",
         "test": [
-            "@test:refacto",
-            "@test:lint",
-            "@test:typos",
-            "@test:types",
+            "@test:pint",
             "@test:unit"
         ]
     }
