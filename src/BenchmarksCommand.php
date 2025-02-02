@@ -2,11 +2,15 @@
 
 namespace ChristophRumpel\ArtisanBenchmark;
 
+use Illuminate\Support\Facades\DB;
+
 trait BenchmarksCommand
 {
     protected float $benchmarkStartTime;
 
     protected int $benchmarkStartMemory;
+
+    protected ?string $tableToBenchmark = null;
 
     public function handle(): void
     {
@@ -32,12 +36,31 @@ trait BenchmarksCommand
             default => round($executionTime * 1000).'ms',
         };
 
+        $laravelQueries = count(DB::getQueryLog());
+
         $this->newLine();
-        $this->line(sprintf(
-            '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </>',
-            $formattedTime,
-            $memoryUsage,
-        ));
-        $this->newLine();
+
+        if ($this->tableToBenchmark) {
+            $dbCount = DB::table($this->tableToBenchmark)->count();
+
+            $this->line(sprintf(
+                '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </> <bg=yellow;fg=black> SQL: 1 </> <bg=magenta;fg=black> ROWS: %s </>',
+                $formattedTime,
+                $memoryUsage,
+//                $laravelQueries,
+                $dbCount
+            ));
+            $this->newLine();
+        } else {
+            $this->line(sprintf(
+                '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </> <bg=yellow;fg=black> SQL: 1 </>',
+                $formattedTime,
+                $memoryUsage,
+                $laravelQueries
+            ));
+            $this->newLine();
+        }
+
+
     }
 }
