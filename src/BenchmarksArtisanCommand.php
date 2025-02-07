@@ -47,7 +47,7 @@ trait BenchmarksArtisanCommand
     {
         $metrics = collect([
             'time' => $this->formatExecutionTime(microtime(true) - $this->benchmarkStartTime),
-            'memory' => round((memory_get_usage() - $this->benchmarkStartMemory) / 1024 / 1024, 2) . 'MB',
+            'memory' => round((memory_get_usage() - $this->benchmarkStartMemory) / 1024 / 1024, 2).'MB',
             'queries' => count(DB::getQueryLog()),
         ]);
 
@@ -62,8 +62,8 @@ trait BenchmarksArtisanCommand
     {
         return match (true) {
             $executionTime >= 60 => sprintf('%dm %ds', floor($executionTime / 60), $executionTime % 60),
-            $executionTime >= 1 => round($executionTime, 2) . 's',
-            default => round($executionTime * 1000) . 'ms',
+            $executionTime >= 1 => round($executionTime, 2).'s',
+            default => round($executionTime * 1000).'ms',
         };
     }
 
@@ -77,7 +77,7 @@ trait BenchmarksArtisanCommand
         });
 
         $this->newLine();
-        $this->line('⚡ ' . $output->join(' '));
+        $this->line('⚡ '.$output->join(' '));
         $this->newLine();
     }
 }
