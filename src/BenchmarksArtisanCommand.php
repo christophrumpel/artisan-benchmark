@@ -2,9 +2,12 @@
 
 namespace ChristophRumpel\ArtisanBenchmark;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
-trait BenchmarksCommand
+use function Laravel\Prompts\select;
+
+trait BenchmarksArtisanCommand
 {
     protected float $benchmarkStartTime;
 
@@ -14,6 +17,16 @@ trait BenchmarksCommand
 
     public function handle(): void
     {
+        if (! $this->argument('signature')) {
+            $allSignatures = collect(Artisan::all())->keys();
+
+            $commandToBenchmark = select('Which command to you want to benchmark?', $allSignatures->toArray());
+            $this->startBenchmark();
+            $this->call($commandToBenchmark);
+            $this->endBenchmark();
+
+            return;
+        }
         $this->startBenchmark();
         $this->handleWithBenchmark();
         $this->endBenchmark();
@@ -23,6 +36,12 @@ trait BenchmarksCommand
     {
         $this->benchmarkStartTime = microtime(true);
         $this->benchmarkStartMemory = memory_get_usage();
+
+        // Enable query logging
+        DB::enableQueryLog();
+
+        // Clear any existing logs
+        DB::flushQueryLog();
     }
 
     protected function endBenchmark(string $table = 'customers'): void
@@ -36,6 +55,7 @@ trait BenchmarksCommand
             default => round($executionTime * 1000).'ms',
         };
 
+        // Count the queries from the log
         $laravelQueries = count(DB::getQueryLog());
 
         $this->newLine();
@@ -44,23 +64,21 @@ trait BenchmarksCommand
             $dbCount = DB::table($this->tableToBenchmark)->count();
 
             $this->line(sprintf(
-                '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </> <bg=yellow;fg=black> SQL: 1 </> <bg=magenta;fg=black> ROWS: %s </>',
+                '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </> <bg=yellow;fg=black> SQL: %s </> <bg=magenta;fg=black> ROWS: %s </>',
                 $formattedTime,
                 $memoryUsage,
-//                $laravelQueries,
+                $laravelQueries,
                 $dbCount
             ));
             $this->newLine();
         } else {
             $this->line(sprintf(
-                '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </> <bg=yellow;fg=black> SQL: 1 </>',
+                '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </> <bg=yellow;fg=black> SQL: %s </>',
                 $formattedTime,
                 $memoryUsage,
                 $laravelQueries
             ));
             $this->newLine();
         }
-
-
     }
 }

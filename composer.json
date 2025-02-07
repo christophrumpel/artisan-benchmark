@@ -15,7 +15,7 @@
     "require-dev": {
         "laravel/pint": "^1.18.1",
         "orchestra/testbench": "^9.9",
-        "pestphp/pest": "^3.5.1",
+        "pestphp/pest": "^3.7",
         "symfony/var-dumper": "^7.1.6"
     },
     "autoload": {
@@ -44,5 +44,12 @@
             "@test:pint",
             "@test:unit"
         ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ChristophRumpel\\ArtisanBenchmark\\ArtisanBenchmarkServiceProvider"
+            ]
+        }
     }
 }
