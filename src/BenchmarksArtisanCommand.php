@@ -2,6 +2,7 @@
 
 namespace ChristophRumpel\ArtisanBenchmark;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
@@ -13,22 +14,19 @@ trait BenchmarksArtisanCommand
 
     protected int $benchmarkStartMemory;
 
-    protected ?string $tableToBenchmark = null;
+    protected ?int $tableToWatchBeginCount;
 
     public function handle(): void
     {
-        if (! $this->argument('signature')) {
+        $commandToBenchmark = $this->argument('signature');
+
+        if (! $commandToBenchmark) {
             $allSignatures = collect(Artisan::all())->keys();
-
             $commandToBenchmark = select('Which command to you want to benchmark?', $allSignatures->toArray());
-            $this->startBenchmark();
-            $this->call($commandToBenchmark);
-            $this->endBenchmark();
-
-            return;
         }
+
         $this->startBenchmark();
-        $this->handleWithBenchmark();
+        $this->call($commandToBenchmark);
         $this->endBenchmark();
     }
 
@@ -37,48 +35,49 @@ trait BenchmarksArtisanCommand
         $this->benchmarkStartTime = microtime(true);
         $this->benchmarkStartMemory = memory_get_usage();
 
-        // Enable query logging
-        DB::enableQueryLog();
+        if ($tableToWatch = $this->option('tableToWatch')) {
+            $this->tableToWatchBeginCount = DB::table($tableToWatch)->count();
+        }
 
-        // Clear any existing logs
+        DB::enableQueryLog();
         DB::flushQueryLog();
     }
 
-    protected function endBenchmark(string $table = 'customers'): void
+    protected function endBenchmark(): void
     {
-        $executionTime = microtime(true) - $this->benchmarkStartTime;
-        $memoryUsage = round((memory_get_usage() - $this->benchmarkStartMemory) / 1024 / 1024, 2);
+        $metrics = collect([
+            'time' => $this->formatExecutionTime(microtime(true) - $this->benchmarkStartTime),
+            'memory' => round((memory_get_usage() - $this->benchmarkStartMemory) / 1024 / 1024, 2) . 'MB',
+            'queries' => count(DB::getQueryLog()),
+        ]);
 
-        $formattedTime = match (true) {
+        if ($tableToWatch = $this->option('tableToWatch')) {
+            $metrics->put('rows', DB::table($tableToWatch)->count() - $this->tableToWatchBeginCount);
+        }
+
+        $this->renderBenchmarkResults($metrics);
+    }
+
+    private function formatExecutionTime(float $executionTime): string
+    {
+        return match (true) {
             $executionTime >= 60 => sprintf('%dm %ds', floor($executionTime / 60), $executionTime % 60),
-            $executionTime >= 1 => round($executionTime, 2).'s',
-            default => round($executionTime * 1000).'ms',
+            $executionTime >= 1 => round($executionTime, 2) . 's',
+            default => round($executionTime * 1000) . 'ms',
         };
+    }
 
-        // Count the queries from the log
-        $laravelQueries = count(DB::getQueryLog());
+    private function renderBenchmarkResults(Collection $metrics): void
+    {
+        $output = $metrics->map(fn ($value, $key) => match ($key) {
+            'time' => "<bg=blue;fg=black> TIME: {$value} </>",
+            'memory' => "<bg=green;fg=black> MEM: {$value} </>",
+            'queries' => "<bg=yellow;fg=black> SQL: {$value} </>",
+            'rows' => "<bg=magenta;fg=black> ROWS: {$value} </>",
+        });
 
         $this->newLine();
-
-        if ($this->tableToBenchmark) {
-            $dbCount = DB::table($this->tableToBenchmark)->count();
-
-            $this->line(sprintf(
-                '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </> <bg=yellow;fg=black> SQL: %s </> <bg=magenta;fg=black> ROWS: %s </>',
-                $formattedTime,
-                $memoryUsage,
-                $laravelQueries,
-                $dbCount
-            ));
-            $this->newLine();
-        } else {
-            $this->line(sprintf(
-                '⚡ <bg=blue;fg=black> TIME: %s </> <bg=green;fg=black> MEM: %sMB </> <bg=yellow;fg=black> SQL: %s </>',
-                $formattedTime,
-                $memoryUsage,
-                $laravelQueries
-            ));
-            $this->newLine();
-        }
+        $this->line('⚡ ' . $output->join(' '));
+        $this->newLine();
     }
 }
