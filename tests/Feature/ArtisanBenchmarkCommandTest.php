@@ -1,6 +1,5 @@
 <?php
 
-use ChristophRumpel\ArtisanBenchmark\BenchmarksArtisanCommand;
 use ChristophRumpel\ArtisanBenchmark\Console\ArtisanBenchmarkCommand;
 use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
