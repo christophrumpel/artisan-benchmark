@@ -4,6 +4,14 @@
 
 # Artisan Benchmark
 
+## Installation
+
+```shell
+composer require christophrumpel/artisan-benchmark
+```
+
+## Usage
+
 This package lets you `benchmark` your artisan commands:
 
 ```shell
