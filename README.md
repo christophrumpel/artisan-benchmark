@@ -19,6 +19,9 @@ You can also provide no signature, then the benchmark command will show you a li
 php artisan benchmark
 ```
 
+![CleanShot 2025-02-14 at 13 21 14@2x](https://github.com/user-attachments/assets/a490b8ec-7859-4966-9fbf-f1e3c66d55d2)
+
+
 ## Good To Know
 
 ### Query Count
