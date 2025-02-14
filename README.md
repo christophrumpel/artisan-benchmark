@@ -1,5 +1,7 @@
 ![CleanShot 2025-02-08 at 17 56 49 3@2x](https://github.com/user-attachments/assets/6d0cac81-7e3f-4443-9ad3-e6b04e16b8e7)
 
+(Part of the video [Import One Million Rows To The Database (PHP/Laravel)](https://youtu.be/CAi4WEKOT4A))
+
 # Artisan Benchmark
 
 This package lets you `benchmark` your artisan commands:
