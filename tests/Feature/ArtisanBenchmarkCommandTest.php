@@ -20,7 +20,7 @@ test('it can benchmark an artisan command with explicit signature', function () 
 test('it asks for command selected from a list', function () {
     // Act & Assert
     $this->artisan(ArtisanBenchmarkCommand::class)
-        ->expectsQuestion('Which command to you want to benchmark?', 'about')
+        ->expectsQuestion('Which command do you want to benchmark?', 'about')
         ->assertSuccessful();
 });
 

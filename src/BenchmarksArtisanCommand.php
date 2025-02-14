@@ -6,6 +6,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Number;
+use Illuminate\Support\Str;
 use function Laravel\Prompts\select;
 
 trait BenchmarksArtisanCommand
@@ -22,7 +24,7 @@ trait BenchmarksArtisanCommand
 
         if (! $commandToBenchmark) {
             $allSignatures = collect(Artisan::all())->keys();
-            $commandToBenchmark = select('Which command to you want to benchmark?', $allSignatures->toArray());
+            $commandToBenchmark = select('Which command do you want to benchmark?', $allSignatures->toArray());
         }
 
         $this->startBenchmark();
@@ -52,7 +54,13 @@ trait BenchmarksArtisanCommand
         ]);
 
         if ($tableToWatch = $this->option('tableToWatch')) {
-            $metrics->put('rows', DB::table($tableToWatch)->count() - $this->tableToWatchBeginCount);
+            $difference = DB::table($tableToWatch)->count() - $this->tableToWatchBeginCount;
+            $metrics->put(
+                'rows',
+                $difference > 0
+                    ? Str::start(Number::format($difference), '+')
+                    : Number::format($difference)
+            );
         }
 
         $this->renderBenchmarkResults($metrics);
