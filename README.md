@@ -10,12 +10,14 @@ This package lets you `benchmark` your artisan commands:
 php artisan benchmark your:command
 ```
 
-Just replaces `your:command` with the signature of your command. Your command will be run; afterward, you will see the benchmark output.
+Simply replace `⁠your:command` with your command signature. After execution, you'll see detailed benchmark results.
+
 
 ![CleanShot 2025-02-08 at 17 56 49@2x](https://github.com/user-attachments/assets/d5a6e86d-1cc4-4786-b246-3c8939aec053)
 
 
-You can also provide no signature, then the benchmark command will show you a list of commands to pick from:
+If you run the command without a signature, it will display a list of available commands to choose from:
+
 
 ```shell
 php artisan benchmark
@@ -24,14 +26,27 @@ php artisan benchmark
 ![CleanShot 2025-02-14 at 13 21 14@2x](https://github.com/user-attachments/assets/a490b8ec-7859-4966-9fbf-f1e3c66d55d2)
 
 
-## Good To Know
+## Table Count Monitoring
+
+You can monitor changes in a specific database table's record count by using the `⁠--tableToWatch` option:
+```php
+php artisan benchmark your:command --tableToWatch=users
+```
+
+Be aware that it only shows the count difference from before running your command.
+
+![CleanShot 2025-02-14 at 13 34 31@2x](https://github.com/user-attachments/assets/ce0ec54a-b99b-49d6-99cd-7b4f062097cc)
+
+
+
+## Technical Details
 
 ### Query Count
-This package uses `query logging` to count the number of queries made, and resets it with every run:
+The package uses Laravel's query logging functionality to track the number of database queries:
 
 ```php
 DB::enableQueryLog();
 DB::flushQueryLog();
 ```
 
-This also mean that only queries made by Eloquent or the Query Builder will be tracked. (I am open for suggestions to improve this.)
+Please note that this only tracks queries executed through Eloquent or the Query Builder. Direct database queries will not be counted. Contributions for improving this functionality are welcome.
