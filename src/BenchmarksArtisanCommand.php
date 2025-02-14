@@ -5,9 +5,9 @@ namespace ChristophRumpel\ArtisanBenchmark;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
+
 use function Laravel\Prompts\select;
 
 trait BenchmarksArtisanCommand
