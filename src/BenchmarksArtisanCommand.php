@@ -2,9 +2,11 @@
 
 namespace ChristophRumpel\ArtisanBenchmark;
 
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
@@ -15,6 +17,8 @@ trait BenchmarksArtisanCommand
     protected float $benchmarkStartTime;
 
     protected int $benchmarkStartMemory;
+
+    protected int $queryCount = 0;
 
     protected ?int $tableToWatchBeginCount;
 
@@ -41,8 +45,7 @@ trait BenchmarksArtisanCommand
             $this->tableToWatchBeginCount = DB::table($tableToWatch)->count();
         }
 
-        DB::enableQueryLog();
-        DB::flushQueryLog();
+        Event::listen(QueryExecuted::class, fn () => $this->queryCount++);
     }
 
     protected function endBenchmark(): void
@@ -50,7 +53,7 @@ trait BenchmarksArtisanCommand
         $metrics = collect([
             'time' => $this->formatExecutionTime(microtime(true) - $this->benchmarkStartTime),
             'memory' => round((memory_get_usage() - $this->benchmarkStartMemory) / 1024 / 1024, 2).'MB',
-            'queries' => count(DB::getQueryLog()),
+            'queries' => $this->queryCount,
         ]);
 
         if ($tableToWatch = $this->option('tableToWatch')) {
