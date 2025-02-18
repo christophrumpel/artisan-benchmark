@@ -3,12 +3,17 @@
 namespace ChristophRumpel\ArtisanBenchmark;
 
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\StringInput;
 
 use function Laravel\Prompts\select;
 
@@ -22,6 +27,13 @@ trait BenchmarksArtisanCommand
 
     protected ?int $tableToWatchBeginCount;
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->ignoreValidationErrors();
+    }
+
     public function handle(): void
     {
         $commandToBenchmark = $this->argument('signature');
@@ -32,8 +44,54 @@ trait BenchmarksArtisanCommand
         }
 
         $this->startBenchmark();
-        $this->call($commandToBenchmark);
+        $this->call($commandToBenchmark, $this->getArgumentsToPassThough());
         $this->endBenchmark();
+    }
+
+    protected function getArgumentsToPassThough(): array
+    {
+        $commandToBenchmark = $this->argument('signature');
+
+        if (! $commandToBenchmark) {
+            return [];
+        }
+
+        $command = Artisan::all()[$commandToBenchmark] ?? null;
+
+        if (! $command) {
+            throw new CommandNotFoundException(
+                \sprintf('Command "%s" does not exist.', $commandToBenchmark)
+            );
+        }
+
+        $booleanOptions = array_keys(array_filter(
+            $command->getDefinition()->getOptions(),
+            fn (InputOption $option) => ! $option->acceptValue(),
+        ));
+
+        $tokens = collect((new StringInput($this->input))->getRawTokens())
+            ->reject(fn (string $token): string => str_starts_with($token, '--tableToWatch='))
+            ->map(function (string $token) use ($booleanOptions): string {
+                $optionName = Str::match('/^--([^=]+)=/', $token);
+
+                if (in_array($optionName, $booleanOptions)) {
+                    return '--'.$optionName;
+                }
+
+                return $token;
+            })
+            ->slice(1)
+            ->toArray();
+
+        $input = new ArgvInput($tokens, $command->getDefinition());
+
+        return [
+            ...$input->getArguments(),
+            ...Arr::mapWithKeys(
+                $input->getOptions(),
+                fn (array|string|null $option, string $key): array => [Str::start($key, '--') => $option]
+            ),
+        ];
     }
 
     protected function startBenchmark(): void
