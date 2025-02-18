@@ -22,11 +22,8 @@ php artisan benchmark
 ## Good To Know
 
 ### Query Count
-This package uses `query logging` to count the number of queries made, and resets it with every run:
+The package uses a listener on the Laravel database event `Illuminate\Database\Events\QueryExecuted` to track the number of database queries.
 
-```php
-DB::enableQueryLog();
-DB::flushQueryLog();
-```
+If events are disabled in your application, queries will not be counted.
 
-This also mean that only queries made by Eloquent or the Query Builder will be tracked. (I am open for suggestions to improve this.)
+Please note that this only tracks queries executed through Eloquent or the Query Builder. Direct database queries will not be counted. Contributions for improving this functionality are welcome.
