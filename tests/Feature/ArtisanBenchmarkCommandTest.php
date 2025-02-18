@@ -29,12 +29,15 @@ test('it can benchmark an artisan command with arguments passed through', functi
     Artisan::call(
         ArtisanBenchmarkCommand::class,
         [
-            'signature' => 'with-arguments:test',
-            'custom-argument' => true,
-            '--custom-option' => true,
-            '--custom-option-with-shortcut' => true,
-            '--custom-option-with-value' => 1,
-            '--custom-option-array' => [1, 2],
+            'signature' => <<<'SIGNATURE'
+                with-arguments:test
+                1
+                --custom-option
+                -C
+                --custom-option-with-value=1
+                --custom-option-array=1
+                --custom-option-array=2
+            SIGNATURE,
         ]
     );
 
@@ -42,33 +45,6 @@ test('it can benchmark an artisan command with arguments passed through', functi
 
     // Assert
     expect($output)
-        ->toContain('Custom argument: 1')
-        ->toContain('Custom option: 1')
-        ->toContain('Custom option with shortcut: 1')
-        ->toContain('Custom option with value: 1')
-        ->toContain('Custom option array: 1, 2');
-});
-
-test('it can benchmark an artisan command with arguments passed through as string', function () {
-    // Arrange
-    app(Kernel::class)->registerCommand(new TestWithArgumentsCommand);
-
-    $input = new StringInput('
-        benchmark
-        with-arguments:test
-        1
-        --custom-option
-        -C
-        --custom-option-with-value=1
-        --custom-option-array=1
-        --custom-option-array=2
-    ');
-
-    // Act
-    Artisan::handle($input, $output = new BufferedOutput);
-
-    // Assert
-    expect($output->fetch())
         ->toContain('Custom argument: 1')
         ->toContain('Custom option: 1')
         ->toContain('Custom option with shortcut: 1')
@@ -85,9 +61,7 @@ test('it can benchmark an artisan command with arguments mixed with tableToWatch
     $input = new StringInput('
         benchmark
         --tableToWatch=users
-        with-arguments:test
-        1
-        --custom-option
+        "with-arguments:test 1 --custom-option"
     ');
 
     // Act
