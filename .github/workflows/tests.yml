@@ -23,7 +23,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, mbstring, zip, fileinfo, pdo_sqlite  # Added pdo_sqlite
+          extensions: dom, intl, mbstring, zip, fileinfo, pdo_sqlite  # Added pdo_sqlite
           coverage: none
 
       - name: Get Composer cache directory
