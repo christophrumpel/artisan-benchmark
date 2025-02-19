@@ -3,12 +3,14 @@
 namespace ChristophRumpel\ArtisanBenchmark;
 
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\ArgvInput;
 
 use function Laravel\Prompts\select;
 
@@ -24,7 +26,7 @@ trait BenchmarksArtisanCommand
 
     public function handle(): void
     {
-        $commandToBenchmark = $this->argument('signature');
+        $commandToBenchmark = array_filter(preg_split('/\s+/', $this->argument('signature')));
 
         if (! $commandToBenchmark) {
             $allSignatures = collect(Artisan::all())->keys();
@@ -32,7 +34,12 @@ trait BenchmarksArtisanCommand
         }
 
         $this->startBenchmark();
-        $this->call($commandToBenchmark);
+
+        Artisan::handle(
+            new ArgvInput(['artisan', ...Arr::wrap($commandToBenchmark)]),
+            $this->output
+        );
+
         $this->endBenchmark();
     }
 

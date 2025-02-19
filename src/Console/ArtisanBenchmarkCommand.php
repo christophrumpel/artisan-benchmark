@@ -10,9 +10,4 @@ class ArtisanBenchmarkCommand extends Command
     use BenchmarksArtisanCommand;
 
     protected $signature = 'benchmark {signature?} {--tableToWatch=}';
-
-    public function handleWithBenchmark(): void
-    {
-        $this->call($this->argument('signature'));
-    }
 }

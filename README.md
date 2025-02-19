@@ -18,8 +18,15 @@ This package lets you `benchmark` your artisan commands:
 php artisan benchmark your:command
 ```
 
-Simply replace `⁠your:command` with your command signature. After execution, you'll see detailed benchmark results.
+Simply replace `⁠your:command` with your command signature.
 
+To provide arguments and options, use quotes to wrap the command signature:
+
+```shell
+php artisan benchmark "your:command --with-option"
+```
+
+After execution, you'll see detailed benchmark results.
 
 ![CleanShot 2025-02-08 at 17 56 49@2x](https://github.com/user-attachments/assets/d5a6e86d-1cc4-4786-b246-3c8939aec053)
 
