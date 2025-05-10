@@ -79,7 +79,7 @@ trait BenchmarksArtisanCommand
     private function formatExecutionTime(float $executionTime): string
     {
         return match (true) {
-            $executionTime >= 60 => sprintf('%dm %ds', floor($executionTime / 60), $executionTime % 60),
+            $executionTime >= 60 => sprintf('%dm %ds', floor($executionTime / 60), (int) $executionTime % 60),
             $executionTime >= 1 => round($executionTime, 2).'s',
             default => round($executionTime * 1000).'ms',
         };
